@@ -1,6 +1,32 @@
 # Retrieval-Augmented Generation (RAG) on Azure
 
-> Read **[Azure-Document-Ingestion](https://github.com/Auxin-io/Azure-Document-Ingestion#readme)** first. It covers prerequisites. It has produced the data, and the shared foundation exists.
+> **Four repos, run in this order.** Ingestion first — the other three read its
+> output. After that they are independent and can be done in any order, or skipped.
+>
+> 1. [Azure-Document-Ingestion](https://github.com/Auxin-io/Azure-Document-Ingestion#readme) — generates the PDFs, OCRs them, writes the training data, and covers the shared prerequisites
+> 2. [Azure-FineTuning-Foundry-Agent](https://github.com/Auxin-io/Azure-FineTuning-Foundry-Agent#readme) — fine-tunes Qwen2.5-3B on finance, serves it, wraps it in an agent
+> 3. [Azure-Employee-Pretraining](https://github.com/Auxin-io/Azure-Employee-Pretraining#readme) — trains a 3.2M-parameter model from scratch on employee docs
+> 4. **Azure-HR-RAG** ← you are here — retrieval over HR docs; no training at all
+
+```mermaid
+flowchart LR
+    ING["1 · Document-Ingestion<br/>PDFs → OCR → training data<br/>(required first)"]
+    FT["2 · FineTuning-Foundry-Agent<br/>knowledge in adapter weights"]
+    PT["3 · Employee-Pretraining<br/>knowledge in the weights"]
+    RAG["4 · HR-RAG<br/>knowledge in an index<br/>(you are here)"]
+
+    ING -->|"finance/*.jsonl"| FT
+    ING -->|"employee/*.jsonl"| PT
+    ING -->|"hr/*.txt"| RAG
+
+    style ING fill:#fde8d7,stroke:#b4651a,stroke-width:2px,color:#3a1f08
+    style FT fill:#eef0f4,stroke:#9aa3b2,stroke-width:1px,color:#3a4050
+    style PT fill:#eef0f4,stroke:#9aa3b2,stroke-width:1px,color:#3a4050
+    style RAG fill:#dbeafe,stroke:#2b5fc9,stroke-width:3px,color:#0b1b3a
+    linkStyle 2 stroke:#2b5fc9,stroke-width:2.5px
+```
+
+🔵 this repo &middot; 🟠 run this one first &middot; ⚪ not needed here
 
 In this project Answers questions about the ten HR documents (policies and leave requests) by
 **retrieving** the relevant passages at question time and letting
