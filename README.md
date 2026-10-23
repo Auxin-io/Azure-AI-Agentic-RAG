@@ -1,7 +1,6 @@
 # RAG on Azure
 
-This repo answers questions about the HR documents by retrieving them at question time, training
-nothing at all.
+This repo answers questions about the HR documents by retrieving them at question time.
 
 What it does:
 - Takes the **HR documents** from [Azure-Data-Ingestion](https://github.com/Auxin-io/Azure-Data-Ingestion)
