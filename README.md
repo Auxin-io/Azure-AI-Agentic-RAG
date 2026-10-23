@@ -1,47 +1,18 @@
-# Retrieval-Augmented Generation (RAG) on Azure
+# RAG on Azure
 
-> **Four repos, run in this order.** Ingestion first — the other three read its
-> output. After that they are independent and can be done in any order, or skipped.
-> 
-> 1. [Azure-Data-Ingestion](https://github.com/Auxin-io/Azure-Data-Ingestion#readme) — generates the PDFs, OCRs them with Document Intelligence, writes the training data
-> 2. [Azure-ML-AI-Agentic-Pre-Train](https://github.com/Auxin-io/Azure-ML-AI-Agentic-Pre-Train#readme) — trains a model from random weights on Azure ML, serves it, wraps it in a Foundry agent
-> 3. [Azure-ML-AI-Agentic-Fine-Tune](https://github.com/Auxin-io/Azure-ML-AI-Agentic-Fine-Tune#readme) — fine-tunes Qwen2.5-3B on Azure ML, serves it, wraps it in a Foundry agent
-> 4. **Azure-AI-Agentic-RAG** ← you are here — retrieval over HR documents with a Foundry agent; no training at all
+This repo answers questions about the HR documents by retrieving them at question time, training
+nothing at all.
 
-```mermaid
-flowchart LR
-    ING["1 · Data-Ingestion<br/>PDFs → OCR → datasets<br/>(required first)"]
-    PT["2 · Agentic Pre-Train<br/>knowledge in the weights"]
-    FT["3 · Agentic Fine-Tune<br/>knowledge in adapter weights"]
-    RAG["4 · Agentic RAG<br/>knowledge in an index<br/>(you are here)"]
-
-    ING -->|"employee"| PT
-    ING -->|"finance"| FT
-    ING -->|"hr"| RAG
-
-    style ING fill:#fde8d7,stroke:#b4651a,stroke-width:2px,color:#3a1f08
-    style PT fill:#eef0f4,stroke:#9aa3b2,stroke-width:1px,color:#3a4050
-    style FT fill:#eef0f4,stroke:#9aa3b2,stroke-width:1px,color:#3a4050
-    style RAG fill:#dbeafe,stroke:#2b5fc9,stroke-width:3px,color:#0b1b3a
-    linkStyle 2 stroke:#2b5fc9,stroke-width:2.5px
-```
-
-🔵 this repo · 🟠 run this one first · ⚪ not needed here
-
-In this project Answers questions about the ten HR documents (policies and leave requests) by
-**retrieving** the relevant passages at question time and letting
-`gpt-4.1-mini` answer from them, with a citation. The
-knowledge lives in an index. Change a document, re-index,
-the answer changes.
+What it does:
+- Takes the **HR documents** from [Azure-Data-Ingestion](https://github.com/Auxin-io/Azure-Data-Ingestion)
+- Chunks and embeds them into a Foundry vector store
+- Answers with a Foundry agent that cites the file each answer came from
 
 ```
 Blob curated/documents/doc-hr-*.txt  ->  Foundry vector store (chunk + embed)  --+
                                                                                  v
 User -> Foundry agent (gpt-4.1-mini) -> file_search tool -> matching chunks -> answer + citation
 ```
-
-Training data comes from the
-[Azure-Data-Ingestion](https://github.com/Auxin-io/Azure-Data-Ingestion).
 
 ---
 
@@ -85,7 +56,9 @@ az login
 
 ---
 
-## Step 1 — infrastructure
+## How To Setup
+
+### Step 1 — infrastructure
 
 ```bash
 cd terraform
@@ -113,7 +86,7 @@ random suffix.
 
 ---
 
-## Step 1 — fetch the documents
+### Step 2 — fetch the documents
 
 ```bash
 python3 -m venv .venv
@@ -131,7 +104,7 @@ during development.
 
 ---
 
-## Step 2 — index and create the agent
+### Step 3 — index and create the agent
 
 ```bash
 python3 rag/create_agent.py
@@ -169,7 +142,7 @@ store appears under the agent's *Knowledge*.
 
 ---
 
-## Step 3 — publish to Microsoft 365 Copilot (optional)
+### Step 4 — publish to Microsoft 365 Copilot (optional)
 
 In the agent click **Publish → Teams and Microsoft 365**, fill in the
 descriptions, keep the generated bot name, and finish. This creates an Azure
